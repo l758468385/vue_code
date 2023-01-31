@@ -5,9 +5,14 @@ function create(obj) {
   empty.prototype = obj
   return new empty()
 }
+
+// 原Array上的原型对象
 const oldArrayProto = Array.prototype
+// 创建一个以原Array构造函数的原型为原型的新对象
 const newArrayProto = create(oldArrayProto)
 
+
+// 会改变原数组的方法
 const methods = ['push', 'pop', 'shift', 'unshift', 'reverse', 'sort', 'splice']
 
 methods.forEach((method) => {
