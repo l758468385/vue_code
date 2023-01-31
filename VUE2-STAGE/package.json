@@ -1,0 +1,20 @@
+{
+  "name": "VUE2-STAGE",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "rollup -cw"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.20.12",
+    "@babel/preset-env": "^7.20.2",
+    "rollup": "^2.61.1",
+    "rollup-plugin-babel": "^4.4.0"
+  }
+}
