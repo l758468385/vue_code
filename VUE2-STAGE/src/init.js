@@ -1,5 +1,6 @@
 import { compileToFunction } from './complier/index'
 import { initState } from './initState'
+import { mountComponent } from './lifecycle'
 
 export function initMixin(Vue) {
   Vue.prototype._init = function (options) {
@@ -33,10 +34,19 @@ export function initMixin(Vue) {
         }
       }
 
-      if (template) {
+      if (template && el) {
         const render = compileToFunction(template)
         ops.render = render
       }
     }
+
+    mountComponent(vm)
   }
 }
+
+
+/* 
+
+  Client Credentials Flow
+  This is the flow defined in RFC6449,Client Credentials Grant.A client application(a) makes a token request to a token endpoint and(b) gets an access token. In this flow,user authentication is not performed and client application authentication only is performed .This is flow defined in RFC
+*/

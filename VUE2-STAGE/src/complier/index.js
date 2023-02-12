@@ -24,7 +24,6 @@ function gen(node) {
     return codeGen(node)
   } else {
     const text = node.text
-    console.log(text)
 
     if (!defaultTagRE.test(text)) {
       return `_v(${JSON.stringify(text)})`
@@ -55,9 +54,9 @@ function genChildren(children) {
 }
 function codeGen(ast) {
   const children = genChildren(ast.children)
-  let code = `_c(${JSON.stringify(ast.tag)},${
-    ast.attrs.length > 0 ? genProps(ast.attrs) : 'null'
-  },${ast.children.length ? `${children}` : ''})`
+  const code = `_c(${JSON.stringify(ast.tag)},{${
+    ast.attrs.length > 0 ? genProps(ast.attrs) : ''
+  }},${ast.children.length ? `${children}` : ''})`
   return code
 }
 
@@ -66,8 +65,17 @@ export function compileToFunction(template) {
   // 1.就是将template 转化成抽象语法树
   let ast = parseHTML(template)
   // 我们希望生成render方法（render方法执行后的返回结果就是虚拟dom）
-  console.log(ast)
-
   let code = codeGen(ast)
   console.log(code)
+  code = `with(this){
+    return ${code}
+  }`
+
+  let render = new Function(code)
+
+  return render
+
+  /* 
+    总结：模板引擎的实现原理 其实就是 with + new Function
+  */
 }
