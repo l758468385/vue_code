@@ -45,7 +45,6 @@ let queue = []
 let has = {}
 let pending = false
 
-
 // 执行刷新操作
 function flushSchedulerQueue() {
   const flushQueue = queue.slice(0)
@@ -54,7 +53,6 @@ function flushSchedulerQueue() {
   pending = false
   flushQueue.forEach((watcher) => watcher.run())
 }
-
 
 // 把watcher放入队列，准备渲染页面，包括一些去重操作
 function queueWatcher(watcher) {
@@ -77,13 +75,43 @@ function flushCallBacks() {
   callbacks = []
   shallowCallBacks.forEach((cb) => cb())
 }
+
+let timerFunc
+if (Promise) {
+  timerFunc = (fn) => {
+    Promise.resolve().then(fn)
+  }
+} else if (MutationObserver) {
+  timerFunc = (fn) => {
+    const observer = new MutationObserver(fn)
+    let textNode = document.createTextNode(1)
+    observer.observe(textNode, {
+      characterData: true
+    })
+    timerFunc = () => {
+      textNode.textContent = 2
+    }
+  }
+} else if (setImmediate) {
+  timerFunc = (fn) => {
+    setImmediate(fn)
+  }
+} else {
+  timerFunc = (fn) => {
+    setTimeout(fn)
+  }
+}
+
+// nextTick 不是创建了一个异步任务，而是将任务维护到了队列中
+// vue源码中，nextTick没有直接使用某个API，而是使用了优雅降级的方式
+// 内部先使用promise（IE不兼容）->MutationObserver => setImmediate(IE专享) => setTimeout
 export function nextTick(cb) {
   callbacks.push(cb)
   if (!waiting) {
-    setTimeout(() => {
+    timerFunc(() => {
       flushCallBacks()
     }, 0)
-    waiting = true 
+    waiting = true
   }
 }
 // 给每一个属性增加一个 dep ，目的就是 收集watcher
