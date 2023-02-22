@@ -40,13 +40,6 @@ export function initMixin(Vue) {
       }
     }
 
-    mountComponent(vm)
+    mountComponent(vm,el)
   }
 }
-
-
-/* 
-
-  Client Credentials Flow
-  This is the flow defined in RFC6449,Client Credentials Grant.A client application(a) makes a token request to a token endpoint and(b) gets an access token. In this flow,user authentication is not performed and client application authentication only is performed .This is flow defined in RFC
-*/

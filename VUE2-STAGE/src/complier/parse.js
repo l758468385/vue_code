@@ -7,7 +7,6 @@ const attribute =
   /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/ // 匹配属性 第一个分组就是属性的key value就是分组3/分组4/分组5
 const startTagClose = /^\s*(\/?)>/ // 匹配标签结束的 >
 
-
 export function parseHTML(html) {
   // 最终需要一颗抽象语法树
 
@@ -120,4 +119,3 @@ export function parseHTML(html) {
   }
   return root
 }
-

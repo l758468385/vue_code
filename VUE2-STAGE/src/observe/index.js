@@ -1,10 +1,10 @@
 import newArrayProto from './array'
+import { Dep } from './dep'
 
 class Observer {
   constructor(data) {
     // Object.defineProperty只能挟持对已经存在的属性（vue立面会为此单独写一些api $set $delete
 
-   
     data.__ob__ = this
     Object.defineProperty(data, '__ob__', {
       value: this,
@@ -42,8 +42,16 @@ export function observe(data) {
 
 export function defineReactive(target, key, value) {
   observe(value)
+  const dep = new Dep()
+  
   Object.defineProperty(target, key, {
     get() {
+      if(Dep.target) {
+        dep.depend() // 当这个属性的收集器记住当前的watcher
+      }else {
+
+      }
+
       // 取值的时候会执行get
       return value
     },
@@ -52,6 +60,7 @@ export function defineReactive(target, key, value) {
       // 修改的时候 会执行set
       observe(newValue)
       value = newValue
+      dep.notify()
     }
   })
 }
