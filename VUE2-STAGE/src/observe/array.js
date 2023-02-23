@@ -32,8 +32,9 @@ methods.forEach((method) => {
       default:
         break
     }
-    ob.observeArray(inserted)
-
+    ob.observeArray(inserted) // 重新观测 
+    console.log('000000slllll');
+    ob.dep.notify() // ob上有一个属性dep 可以 更新通知
     return result
   }
 })
