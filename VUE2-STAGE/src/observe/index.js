@@ -43,7 +43,8 @@ export function observe(data) {
 function dependArray(value) {
   for (let i = 0; i < value.length; i++) {
     const current = value[i]
-    if(current.__ob__) {
+    if (current.__ob__) {
+      console.log('---->>>>>>');
       current.__ob__.dep.depend()
     }
     if (Array.isArray(current)) {

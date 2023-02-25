@@ -1,5 +1,5 @@
-import { Dep } from './dep'
-
+import { Dep, popTarget, pushTarget } from './dep'
+let i = 0
 // 1.当我们创建渲染watcher的时候，我们会把当前的渲染watcher放到Dep.target上
 // 2.调用_render() 会取值,会走到get上
 // 3.
@@ -14,7 +14,13 @@ export class Watcher {
 
     this.deps = []
     this.depsId = new Set()
-    this.get()
+
+    this.lazy = options.lazy // 如果为true代表为懒的 / 也可判断是否是计算属性
+    this.dirty = this.lazy
+    this.vm = vm
+
+    // 脏值监测 计算属性缓存功能
+    this.lazy ? undefined : this.get() // 是计算属性的话，就不去走get
   }
   addDep(dep) {
     // 一个组件，对应这多个属性 重复的属性也不用记录
@@ -25,19 +31,36 @@ export class Watcher {
       dep.addSub(this)
     }
   }
+  depend() {
+    let i = this.deps.length
+    while (i--) {
+      this.deps[i].depend()
+    }
+  }
   update() {
     // 不立即更新了
     // this.get() // 重新渲染
-    queueWatcher(this)
+    if (this.lazy) {
+      // 如果是计算属性触发了notify,dirty 需要改为true
+      this.dirty = true
+    } else {
+      queueWatcher(this)
+    }
   }
   run() {
     this.get()
   }
+  evaluate() {
+    this.value = this.get() // 获取到用户函数的返回值，并且还要表示为脏
+    this.dirty = false
+  }
   get() {
-    Dep.target = this // 静态属性就是只有一份
-    this.getter() //会到vm上取值
-
-    Dep.target = null
+    // Dep.target = this // 静态属性就是只有一份
+    pushTarget(this)
+    const value = this.getter.call(this.vm) //会到vm上取值
+    // Dep.target = null
+    popTarget()
+    return value
   }
 }
 
@@ -106,6 +129,7 @@ if (Promise) {
 // vue源码中，nextTick没有直接使用某个API，而是使用了优雅降级的方式
 // 内部先使用promise（IE不兼容）->MutationObserver => setImmediate(IE专享) => setTimeout
 export function nextTick(cb) {
+  // 个人理解，为了避免同步更新太频繁，创建异步任务防抖
   callbacks.push(cb)
   if (!waiting) {
     timerFunc(() => {

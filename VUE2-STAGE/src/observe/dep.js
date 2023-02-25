@@ -4,7 +4,7 @@ let id = 0
 export class Dep {
   constructor() {
     this.id = id++ //属性的dep要收集watcher
-    this.subs = [] //把属性对应的watcher存放在这
+    this.subs = [] //把属性对应的watcher存放在这 
   }
   addSub(watcher) {
     this.subs.push(watcher)
@@ -21,3 +21,15 @@ export class Dep {
   }
 }
 Dep.target = null
+
+let stack = []
+
+export function pushTarget(watcher) {
+  stack.push(watcher)
+  Dep.target = watcher
+}
+
+export function popTarget() {
+  stack.pop()
+  Dep.target = stack[stack.length - 1]
+}
