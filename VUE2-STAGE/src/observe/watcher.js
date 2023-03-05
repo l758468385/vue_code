@@ -1,26 +1,36 @@
 import { Dep, popTarget, pushTarget } from './dep'
-let i = 0
 // 1.当我们创建渲染watcher的时候，我们会把当前的渲染watcher放到Dep.target上
 // 2.调用_render() 会取值,会走到get上
 // 3.
 let id = 0
 
 export class Watcher {
-  constructor(vm, fn, options) {
+  constructor(vm, fn, options, cb = () => {}) {
     // 每个组件有不同的watcher
     this.id = id++
     this.renderWatcher = options
-    this.getter = fn //getter意味着调用这个函数可以发生取值
+
+    // 这个fn如果是watch 就不一定是函数
+    if (typeof fn === 'string') {
+      // 
+      this.getter = function () {
+        return vm[fn]
+      }
+    } else {
+      console.log('asdf')
+      this.getter = fn //getter意味着调用这个函数可以发生取值
+    }
 
     this.deps = []
     this.depsId = new Set()
-
+    this.cb = cb
     this.lazy = options.lazy // 如果为true代表为懒的 / 也可判断是否是计算属性
     this.dirty = this.lazy
     this.vm = vm
 
+    this.user = options.user // 标识是否是用户自己的watcher
     // 脏值监测 计算属性缓存功能
-    this.lazy ? undefined : this.get() // 是计算属性的话，就不去走get
+    this.value = this.lazy ? undefined : this.get() // 是计算属性的话，就不去走get
   }
   addDep(dep) {
     // 一个组件，对应这多个属性 重复的属性也不用记录
@@ -32,6 +42,7 @@ export class Watcher {
     }
   }
   depend() {
+    // 收集计算属性watcher的每个dep ，再把外面一层渲染watcher 收集起来
     let i = this.deps.length
     while (i--) {
       this.deps[i].depend()
@@ -44,11 +55,18 @@ export class Watcher {
       // 如果是计算属性触发了notify,dirty 需要改为true
       this.dirty = true
     } else {
-      queueWatcher(this)
+      queueWatcher(this) // 把当前的watcher 暂存起来 
     }
   }
   run() {
-    this.get()
+    const oldValue = this.value
+    const newValue = this.get()
+
+
+    // 如果是用户自己的watch 就执行传入的回调
+    if (this.user) {
+      this.cb.call(this.vm, newValue, oldValue)
+    }
   }
   evaluate() {
     this.value = this.get() // 获取到用户函数的返回值，并且还要表示为脏

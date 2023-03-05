@@ -9,6 +9,9 @@ export function initState(vm) {
   if (opts.computed) {
     initComputed(vm)
   }
+  if (opts.watch) {
+    initWatch(vm)
+  }
 }
 
 function initData(vm) {
@@ -44,6 +47,7 @@ function initComputed(vm) {
     if (Object.hasOwnProperty.call(computed, key)) {
       const userDef = computed[key] // 用户定义的计算属性
       const getter = typeof userDef === 'function' ? userDef : userDef.get
+      console.log('计算属性watch');
       watchers[key] = new Watcher(vm, getter, { lazy: true })
       defineComputed(vm, key, userDef)
     }
@@ -51,7 +55,7 @@ function initComputed(vm) {
 }
 
 function defineComputed(target, key, userDef) {
-  const setter = userDef.set || (() => {})
+  const setter = userDef.set || (() => { })
 
   // 可以通过实例拿到对应的属性
   Object.defineProperty(target, key, {
@@ -65,12 +69,47 @@ function createComputedGetter(key) {
     const watcher = this._computedWatchers[key]
     if (watcher.dirty) {
       // 如果是脏的，就去执行用户传入的函数
-      watcher.evaluate()
+      watcher.evaluate() // 这时候栈顶的 计算属性watcher 出栈
     }
     if (Dep.target) {
-      // 因为执行到这会取栈顶的Watcher
+      // 因为执行到这会取栈顶的Watcher --> 渲染watcher
       watcher.depend()
     }
     return watcher.value
+  }
+}
+
+function initWatch(vm) {
+  const watch = vm.$options.watch
+  for (const key in watch) {
+    if (Object.hasOwnProperty.call(watch, key)) {
+      const handler = watch[key]
+      if (Array.isArray(handler)) {
+        for (let i = 0; i < handler.length; i++) {
+          createWatcher(vm, key, handler[i])
+        }
+      } else {
+        createWatcher(vm, key, handler)
+      }
+    }
+  }
+}
+
+function createWatcher(vm, key, handler) {
+  // 字符串 函数
+  if (typeof handler === 'string') {
+    handler = vm[handler]
+  }
+  return vm.$watch(key, handler)
+}
+
+export function initStateMixin(Vue) {
+  Vue.prototype.$nextTick = nextTick
+  // 最终调用的都是这个方法
+  Vue.prototype.$watch = function (exprOrFn, cb) {
+    // exprOrFn 有可能是一个 'firstName' 也有可能()=>vm.firstName
+
+    // firstName 变化了 直接执行cb函数
+    new Watcher(this, exprOrFn, { user: true }, cb)
   }
 }

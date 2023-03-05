@@ -78,6 +78,7 @@ export function mountComponent(vm, el) {
     vm._update(vm._render()) // vm.$options.render()  虚拟节点
   }
   // 1.调用render方法产生虚拟节点， 虚拟DOM/虚拟节点
+  console.log('渲染watcher');
   new Watcher(vm, updateComponent, true) // true是用于标识是一个渲染watcher
   //2.根据虚拟dom产生真实dom
 
