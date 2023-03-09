@@ -1,46 +1,7 @@
 import { Watcher } from './observe/watcher.js'
 import { createElementVNode, createTextVNode } from './vdom/index.js'
+import { patch } from './vdom/patch.js'
 
-function createElement(vnode) {
-  let { tag, data, children, text } = vnode
-  if (typeof tag === 'string') {
-    vnode.el = document.createElement(tag) //这里将真是节点和虚拟节点对应起来，后续如果修改属性了
-
-    patchProps(vnode.el, data)
-    children.forEach((child) => {
-      vnode.el.appendChild(createElement(child))
-    })
-  } else {
-    vnode.el = document.createTextNode(text)
-  }
-  return vnode.el
-}
-
-function patchProps(el, props) {
-  for (const key in props) {
-    if (key === 'style') {
-      for (const styleName in props[key]) {
-        el.style[styleName] = props.style[styleName]
-      }
-    } else {
-      el.setAttribute(key, props[key])
-    }
-  }
-}
-function patch(oldVNode, vnode) {
-  const isRealElement = oldVNode.nodeType
-  if (isRealElement) {
-    const element = oldVNode // 拿到真实元素
-    const parentElement = element.parentNode // 拿到父元素
-    let newElement = createElement(vnode)
-
-    parentElement.insertBefore(newElement, element.nextSibling)
-    parentElement.removeChild(element)
-    return newElement
-  } else {
-    // diff算法
-  }
-}
 
 export function initLiftCycle(Vue) {
   Vue.prototype._update = function (vnode) {

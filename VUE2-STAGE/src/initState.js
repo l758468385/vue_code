@@ -1,6 +1,6 @@
 import { Dep } from './observe/dep.js'
 import { observe } from './observe/index.js'
-import { Watcher } from './observe/watcher.js'
+import { nextTick, Watcher } from './observe/watcher.js'
 export function initState(vm) {
   const opts = vm.$options
   if (opts.data) {

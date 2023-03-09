@@ -1,15 +1,15 @@
 // h() _c()
 export function createElementVNode(vm, tag, data = {}, ...children) {
   if (data === null) {
-    data = {}
+    data = {};
   }
-  const key = data.key
-  return vnode(vm, tag, key, data, children)
+  const key = data.key;
+  return vnode(vm, tag, key, data, children);
 }
 
 // _v()
 export function createTextVNode(vm, text) {
-  return vnode(vm, undefined, undefined, undefined, undefined, text)
+  return vnode(vm, undefined, undefined, undefined, undefined, text);
 }
 
 // 创建vnode的方法
@@ -25,7 +25,11 @@ function vnode(vm, tag, key, data, children, text) {
     key,
     data,
     children,
-    text
+    text,
     //
-  }
+  };
+}
+
+export function isSameVnode(vnode1, vnode2) {
+  return vnode.tag === vnode2.tag && vnode1.key === vnode2.key;
 }
